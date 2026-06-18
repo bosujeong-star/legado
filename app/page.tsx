@@ -1,5 +1,25 @@
+'use client'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 export default function Home() {
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    // 현재 로그인 상태 확인
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user)
+    })
+    // 로그인/로그아웃 감지
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+  }
   return (
     <main className="min-h-screen bg-[#f7f4ee]" style={{ fontFamily: 'Georgia, serif' }}>
 
@@ -13,9 +33,22 @@ export default function Home() {
           <a href="#" className="hover:text-[#1c1a17] transition">참여 형태</a>
           <a href="#" className="hover:text-[#1c1a17] transition">이용 방법</a>
         </div>
-        <Link href="/register" className="text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2 hover:bg-[#3a6048] hover:text-white transition">
-  참여 선언하기
+        {user ? (
+  <div className="flex items-center gap-3">
+   <Link href="/mypage" className="text-sm text-[#8c857a] hover:text-[#1c1a17] transition">
+  {user.user_metadata?.name || user.email}
 </Link>
+    <button
+      onClick={handleLogout}
+      className="text-sm border border-[#d8d2c8] text-[#8c857a] px-4 py-2 hover:border-[#1c1a17] hover:text-[#1c1a17] transition">
+      로그아웃
+    </button>
+  </div>
+) : (
+  <Link href="/auth" className="text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2 hover:bg-[#3a6048] hover:text-white transition">
+    로그인
+  </Link>
+)}
       </nav>
 
       {/* 히어로 */}
