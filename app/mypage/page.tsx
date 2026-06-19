@@ -50,6 +50,23 @@ export default function MyPage() {
     window.location.href = '/'
   }
 
+const updateConnectionStatus = async (connId: number, newStatus: string) => {
+    const { error } = await supabase
+      .from('connections')
+      .update({ status: newStatus })
+      .eq('id', connId)
+
+    if (error) {
+      alert('처리 중 오류가 발생했습니다')
+      console.error(error)
+    } else {
+      // 화면에서도 바로 업데이트
+      setConnections(prev =>
+        prev.map(c => c.id === connId ? { ...c, status: newStatus } : c)
+      )
+    }
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-[#f7f4ee] flex items-center justify-center">
       <p className="text-sm text-[#8c857a]">불러오는 중...</p>
@@ -147,19 +164,38 @@ export default function MyPage() {
               받은 연결 요청 ({connections.length})
             </p>
             <div className="space-y-4">
-              {connections.map((conn, i) => (
+{connections.map((conn, i) => (
                 <div key={i} className="border border-[#d8d2c8] p-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="text-sm font-semibold text-[#1c1a17]">{conn.requester_name}</p>
                       <p className="text-xs text-[#8c857a]">{conn.requester_org}</p>
                     </div>
-                    <span className="text-xs bg-[#f0e8d8] text-[#a07840] px-3 py-1 rounded-full">
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium
+                      ${conn.status === '수락' ? 'bg-[#d8e8de] text-[#3a6048]' :
+                        conn.status === '거절' ? 'bg-[#e8e4de] text-[#8c857a]' :
+                                                  'bg-[#f0e8d8] text-[#a07840]'}`}>
                       {conn.status}
                     </span>
                   </div>
                   <p className="text-sm text-[#1c1a17] mb-2">{conn.message}</p>
-                  <p className="text-xs text-[#8c857a]">{conn.requester_email}</p>
+                  <p className="text-xs text-[#8c857a] mb-3">{conn.requester_email}</p>
+
+                  {/* 대기중일 때만 수락/거절 버튼 표시 */}
+                  {conn.status === '대기중' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => updateConnectionStatus(conn.id, '수락')}
+                        className="flex-1 bg-[#3a6048] text-white text-xs py-2 hover:opacity-90 transition">
+                        수락
+                      </button>
+                      <button
+                        onClick={() => updateConnectionStatus(conn.id, '거절')}
+                        className="flex-1 border border-[#d8d2c8] text-[#8c857a] text-xs py-2 hover:border-[#1c1a17] transition">
+                        거절
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
