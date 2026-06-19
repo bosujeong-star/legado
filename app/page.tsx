@@ -23,8 +23,7 @@ const [menuOpen, setMenuOpen] = useState(false)
   }
   return (
     <main className="min-h-screen bg-[#f7f4ee]" style={{ fontFamily: 'Georgia, serif' }}>
-
-      {/* 네비게이션 */}
+{/* 네비게이션 */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#f7f4ee]/95 backdrop-blur border-b border-[#d8d2c8] px-8 h-16 flex items-center justify-between">
         <div className="text-2xl font-light tracking-widest">
           L<em className="text-[#a07840]">e</em>gado
@@ -34,36 +33,61 @@ const [menuOpen, setMenuOpen] = useState(false)
           <a href="#" className="hover:text-[#1c1a17] transition">참여 형태</a>
           <a href="#" className="hover:text-[#1c1a17] transition">이용 방법</a>
         </div>
-        {user ? (
-  <div className="flex items-center gap-3">
-   <Link href="/mypage" className="text-sm text-[#8c857a] hover:text-[#1c1a17] transition">
-  {user.user_metadata?.name || user.email}
-</Link>
-    <button
-      onClick={handleLogout}
-      className="text-sm border border-[#d8d2c8] text-[#8c857a] px-4 py-2 hover:border-[#1c1a17] hover:text-[#1c1a17] transition">
-      로그아웃
-    </button>
-  </div>
-) : (
-  <Link href="/auth" className="text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2 hover:bg-[#3a6048] hover:text-white transition">
-    로그인
-  </Link>
-)}
-      {/* 모바일 햄버거 버튼 */}
+
+        {/* 데스크탑 전용 로그인 영역 */}
+        <div className="hidden md:block">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <Link href="/mypage" className="text-sm text-[#8c857a] hover:text-[#1c1a17] transition">
+                {user.user_metadata?.name || user.email}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm border border-[#d8d2c8] text-[#8c857a] px-4 py-2 hover:border-[#1c1a17] hover:text-[#1c1a17] transition">
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <Link href="/auth" className="text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2 hover:bg-[#3a6048] hover:text-white transition">
+              로그인
+            </Link>
+          )}
+        </div>
+
+        {/* 모바일 햄버거 버튼 */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-2xl text-[#1c1a17] ml-3">
+          className="md:hidden text-2xl text-[#1c1a17]">
           {menuOpen ? '✕' : '☰'}
         </button>
       </nav>
 
-      {/* 모바일 드롭다운 메뉴 */}
+     {/* 모바일 드롭다운 메뉴 */}
       {menuOpen && (
-        <div className="md:hidden border-b border-[#d8d2c8] bg-[#f7f4ee] px-8 py-4 flex flex-col gap-4 text-sm">
+        <div className="md:hidden fixed top-16 left-0 right-0 z-50 border-b border-[#d8d2c8] bg-[#f7f4ee] px-8 py-4 flex flex-col gap-4 text-sm">
           <Link href="/explore" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">찾아보기</Link>
           <a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">참여 형태</a>
           <a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">이용 방법</a>
+
+          <div className="border-t border-[#d8d2c8] pt-4 mt-2">
+            {user ? (
+              <>
+                <Link href="/mypage" onClick={() => setMenuOpen(false)} className="block text-[#1c1a17] mb-3">
+                  {user.user_metadata?.name || user.email} 님
+                </Link>
+                <button
+                  onClick={() => { handleLogout(); setMenuOpen(false); }}
+                  className="text-sm border border-[#d8d2c8] text-[#8c857a] px-4 py-2 hover:border-[#1c1a17] transition">
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <Link href="/auth" onClick={() => setMenuOpen(false)}
+                className="inline-block text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2">
+                로그인
+              </Link>
+            )}
+          </div>
         </div>
       )}
 
