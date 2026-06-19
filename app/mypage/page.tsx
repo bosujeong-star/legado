@@ -104,7 +104,7 @@ export default function MyPage() {
           <div className="border border-[#d8d2c8] bg-white p-6 mb-6">
             <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">내 등록 프로필</p>
             <div className="space-y-3">
-              {[
+{[
                 { label: '참여 유형', value: profile.type },
                 { label: '경력', value: profile.career },
                 { label: '전문 분야', value: profile.field },
@@ -113,9 +113,9 @@ export default function MyPage() {
                 { label: '참여 조건', value: profile.fee },
                 { label: '선호 지역', value: profile.region },
               ].map((item, i) => (
-                <div key={i} className="flex justify-between text-sm border-b border-[#f0ece4] pb-2 last:border-0">
+                <div key={i} className="flex flex-col sm:flex-row sm:justify-between text-sm border-b border-[#f0ece4] pb-2 last:border-0 gap-1">
                   <span className="text-[#8c857a]">{item.label}</span>
-                  <span className="text-[#1c1a17] text-right max-w-xs">{item.value}</span>
+                  <span className="text-[#1c1a17] sm:text-right">{item.value}</span>
                 </div>
               ))}
             </div>
