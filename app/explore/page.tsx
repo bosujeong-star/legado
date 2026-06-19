@@ -3,11 +3,13 @@
 import { supabase } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 const fields = ['전체', '공학·기술', '경영·창업', '의료·바이오', '법·정책', '금융·경제']
 const types  = ['전체', '전문가 등록', '대학 초청']
 
 export default function Explore() {
+  const router = useRouter()
   const [listings, setListings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeField, setActiveField] = useState('전체')
@@ -52,11 +54,19 @@ export default function Explore() {
     return matchField && matchType && matchSearch
   })
 
-  const openModal = (item: any) => {
+  const openModal = async (item: any) => {
+    // 로그인 확인
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      alert('연결 요청을 보내려면 먼저 로그인해주세요')
+      router.push('/auth')
+      return
+    }
+
     setSelected(item)
     setSent(false)
-    setReqName('')
-    setReqEmail('')
+    setReqName(user.user_metadata?.name || '')
+    setReqEmail(user.email || '')
     setReqOrg('')
     setReqMessage('')
   }

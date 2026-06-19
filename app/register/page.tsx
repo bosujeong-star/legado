@@ -1,10 +1,16 @@
 'use client'
+
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-import { useState } from 'react'
+function RegisterForm() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const editId = searchParams.get('edit') // 수정 모드면 프로필 id가 들어있음
 
-export default function Register() {
   const [step, setStep] = useState(1)
+  const [loadingExisting, setLoadingExisting] = useState(!!editId)
   const [form, setForm] = useState({
     type: '',
     name: '',
@@ -15,6 +21,33 @@ export default function Register() {
     region: '',
     fee: '',
   })
+
+  // 수정 모드면 기존 데이터 불러오기
+  useEffect(() => {
+    const loadExisting = async () => {
+      if (!editId) return
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', editId)
+        .single()
+
+      if (data) {
+        setForm({
+          type: data.type || '',
+          name: data.name || '',
+          career: data.career || '',
+          field: data.field || '',
+          motive: data.motive || '',
+          format: data.format ? data.format.split(', ') : [],
+          region: data.region || '',
+          fee: data.fee || '',
+        })
+      }
+      setLoadingExisting(false)
+    }
+    loadExisting()
+  }, [editId])
 
   const updateForm = (key: string, value: string) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -29,27 +62,55 @@ export default function Register() {
     }))
   }
 
-// DB에 저장하는 함수
+  // 새로 만들기 또는 수정해서 저장하는 함수
   const handleSubmit = async () => {
-    const { error } = await supabase
-      .from('profiles')
-      .insert([{
-        type: form.type,
-        name: form.name,
-        career: form.career,
-        field: form.field,
-        motive: form.motive,
-        format: form.format.join(', '),
-        region: form.region,
-        fee: form.fee,
-      }])
-
-    if (error) {
-      alert('저장 중 오류가 발생했습니다')
-      console.error(error)
-    } else {
-      alert('참여 선언이 완료됐습니다! 🎉')
+    const payload = {
+      type: form.type,
+      name: form.name,
+      career: form.career,
+      field: form.field,
+      motive: form.motive,
+      format: form.format.join(', '),
+      region: form.region,
+      fee: form.fee,
     }
+
+    if (editId) {
+      // 수정 모드: 기존 row 업데이트
+      const { error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('id', editId)
+
+      if (error) {
+        alert('수정 중 오류가 발생했습니다')
+        console.error(error)
+      } else {
+        alert('프로필이 수정됐습니다! 🎉')
+        router.push('/mypage')
+      }
+    } else {
+      // 신규 등록
+      const { error } = await supabase
+        .from('profiles')
+        .insert([payload])
+
+      if (error) {
+        alert('저장 중 오류가 발생했습니다')
+        console.error(error)
+      } else {
+        alert('참여 선언이 완료됐습니다! 🎉')
+        router.push('/mypage')
+      }
+    }
+  }
+
+  if (loadingExisting) {
+    return (
+      <main className="min-h-screen bg-[#f7f4ee] flex items-center justify-center">
+        <p className="text-sm text-[#8c857a]">불러오는 중...</p>
+      </main>
+    )
   }
 
   return (
@@ -60,7 +121,7 @@ export default function Register() {
         <a href="/" className="text-2xl font-light tracking-widest" style={{ fontFamily: 'Georgia, serif' }}>
           L<em className="text-[#a07840]">e</em>gado
         </a>
-        <span className="text-sm text-[#8c857a]">참여 선언</span>
+        <span className="text-sm text-[#8c857a]">{editId ? '프로필 수정' : '참여 선언'}</span>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-16">
@@ -91,7 +152,6 @@ export default function Register() {
               <p className="text-sm text-[#8c857a]">학위나 직함보다, 어떤 경험을 가지셨는지가 중요합니다.</p>
             </div>
 
-            {/* 유형 선택 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">참여 유형</label>
               <div className="grid grid-cols-2 gap-3">
@@ -107,29 +167,26 @@ export default function Register() {
               </div>
             </div>
 
-            {/* 이름 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">이름</label>
               <input
                 value={form.name}
                 onChange={e => updateForm('name', e.target.value)}
                 placeholder="홍길동"
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#3a6048] text-[#1c1a17]"
+                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
               />
             </div>
 
-            {/* 경력 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">주요 경력</label>
               <input
                 value={form.career}
                 onChange={e => updateForm('career', e.target.value)}
                 placeholder="예: 전 삼성전자 DS부문 상무 · 반도체 공정 20년"
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#3a6048] text-[#1c1a17]"
+                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
               />
             </div>
 
-            {/* 전문 분야 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">전문 분야</label>
               <div className="grid grid-cols-3 gap-2">
@@ -171,12 +228,11 @@ export default function Register() {
                 onChange={e => updateForm('motive', e.target.value)}
                 placeholder="예: 30년 현장 경험을 다음 세대에게 남기고 싶어서요"
                 rows={4}
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#3a6048] resize-none"
+                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048] resize-none"
               />
               <p className="text-xs text-[#8c857a] mt-2">프로필 카드에 이탤릭체로 표시됩니다</p>
             </div>
 
-            {/* 미리보기 */}
             {form.motive && (
               <div className="border border-[#d8d2c8] bg-white p-5">
                 <p className="text-xs tracking-widest uppercase text-[#8c857a] mb-3">미리보기</p>
@@ -213,7 +269,6 @@ export default function Register() {
               <p className="text-sm text-[#8c857a]">복수 선택 가능합니다.</p>
             </div>
 
-            {/* 참여 형태 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">참여 형태</label>
               <div className="grid grid-cols-2 gap-3">
@@ -229,7 +284,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* 참여 조건 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">참여 조건</label>
               <div className="grid grid-cols-3 gap-3">
@@ -245,14 +299,13 @@ export default function Register() {
               </div>
             </div>
 
-            {/* 지역 */}
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">선호 지역</label>
               <input
                 value={form.region}
                 onChange={e => updateForm('region', e.target.value)}
                 placeholder="예: 서울·경기, 전국, 온라인 가능"
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#3a6048] text-[#1c1a17]"
+                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
               />
             </div>
 
@@ -265,7 +318,7 @@ export default function Register() {
                 onClick={handleSubmit}
                 disabled={form.format.length === 0 || !form.fee}
                 className="flex-1 bg-[#3a6048] text-white py-4 text-sm font-medium hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed">
-                참여 선언하기 🎉
+                {editId ? '수정 완료 ✓' : '참여 선언하기 🎉'}
               </button>
             </div>
           </div>
@@ -273,5 +326,13 @@ export default function Register() {
 
       </div>
     </main>
+  )
+}
+
+export default function Register() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f7f4ee]" />}>
+      <RegisterForm />
+    </Suspense>
   )
 }

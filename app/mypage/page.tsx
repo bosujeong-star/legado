@@ -120,10 +120,10 @@ export default function MyPage() {
               ))}
             </div>
             <div className="mt-6 flex gap-3">
-              <Link href="/register"
-                className="flex-1 text-center border border-[#d8d2c8] text-[#1c1a17] py-3 text-sm hover:border-[#1c1a17] transition">
-                프로필 수정
-              </Link>
+             <Link href={`/register?edit=${profile.id}`}
+  className="flex-1 text-center border border-[#d8d2c8] text-[#1c1a17] py-3 text-sm hover:border-[#1c1a17] transition">
+  프로필 수정
+</Link>
               <Link href="/explore"
                 className="flex-1 text-center bg-[#3a6048] text-white py-3 text-sm hover:opacity-90 transition">
                 찾아보기 →
