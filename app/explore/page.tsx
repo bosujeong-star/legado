@@ -2,19 +2,27 @@
 
 import { supabase } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 const fields = ['전체', '공학·기술', '경영·창업', '의료·바이오', '법·정책', '금융·경제']
 const types  = ['전체', '전문가 등록', '대학 초청']
 
 export default function Explore() {
-  // DB에서 불러온 데이터를 담을 상태
   const [listings, setListings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeField, setActiveField] = useState('전체')
   const [activeType,  setActiveType]  = useState('전체')
   const [search, setSearch] = useState('')
 
-  // 페이지 열릴 때 DB에서 데이터 불러오기
+  // 연결 요청 모달 상태
+  const [selected, setSelected] = useState<any>(null)
+  const [reqName, setReqName] = useState('')
+  const [reqEmail, setReqEmail] = useState('')
+  const [reqOrg, setReqOrg] = useState('')
+  const [reqMessage, setReqMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+
   useEffect(() => {
     const fetchProfiles = async () => {
       const { data, error } = await supabase
@@ -44,23 +52,55 @@ export default function Explore() {
     return matchField && matchType && matchSearch
   })
 
+  const openModal = (item: any) => {
+    setSelected(item)
+    setSent(false)
+    setReqName('')
+    setReqEmail('')
+    setReqOrg('')
+    setReqMessage('')
+  }
+
+  const closeModal = () => setSelected(null)
+
+  const handleSendRequest = async () => {
+    setSending(true)
+    const { error } = await supabase
+      .from('connections')
+      .insert([{
+        profile_id: selected.id,
+        requester_name: reqName,
+        requester_email: reqEmail,
+        requester_org: reqOrg,
+        message: reqMessage,
+      }])
+
+    if (error) {
+      alert('전송 중 오류가 발생했습니다')
+      console.error(error)
+    } else {
+      setSent(true)
+    }
+    setSending(false)
+  }
+
   return (
     <main className="min-h-screen bg-[#f7f4ee]" style={{ fontFamily: 'sans-serif' }}>
 
       {/* 네비 */}
       <nav className="border-b border-[#d8d2c8] px-8 h-16 flex items-center justify-between">
-        <a href="/" className="text-2xl font-light tracking-widest" style={{ fontFamily: 'Georgia, serif' }}>
+        <Link href="/" className="text-2xl font-light tracking-widest" style={{ fontFamily: 'Georgia, serif' }}>
           L<em className="text-[#a07840]">e</em>gado
-        </a>
+        </Link>
         <div className="hidden md:flex gap-8 text-sm text-[#8c857a]">
-          <a href="/explore" className="text-[#1c1a17] font-medium">찾아보기</a>
+          <Link href="/explore" className="text-[#1c1a17] font-medium">찾아보기</Link>
           <a href="#" className="hover:text-[#1c1a17] transition">참여 형태</a>
           <a href="#" className="hover:text-[#1c1a17] transition">이용 방법</a>
         </div>
-        <a href="/register"
+        <Link href="/register"
           className="text-sm border border-[#3a6048] text-[#3a6048] px-4 py-2 hover:bg-[#3a6048] hover:text-white transition">
           참여 선언하기
-        </a>
+        </Link>
       </nav>
 
       <div className="max-w-6xl mx-auto px-8 py-16">
@@ -126,7 +166,9 @@ export default function Explore() {
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
             {filtered.map((item, i) => (
-              <div key={i} className="border border-[#d8d2c8] bg-white hover:shadow-md transition overflow-hidden cursor-pointer">
+              <div key={i}
+                onClick={() => openModal(item)}
+                className="border border-[#d8d2c8] bg-white hover:shadow-md transition overflow-hidden cursor-pointer">
                 <div className="p-5 border-b border-[#d8d2c8]">
                   <div className="flex items-start justify-between mb-3">
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full
@@ -167,6 +209,75 @@ export default function Explore() {
           <a href="#" className="hover:text-[#1c1a17]">문의</a>
         </div>
       </footer>
+
+      {/* 연결 요청 모달 */}
+      {selected && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50"
+          onClick={closeModal}>
+          <div className="bg-[#f7f4ee] max-w-md w-full p-8 relative"
+            onClick={e => e.stopPropagation()}>
+            <button onClick={closeModal}
+              className="absolute top-4 right-4 text-[#8c857a] hover:text-[#1c1a17] text-xl">
+              ×
+            </button>
+
+            {!sent ? (
+              <>
+                <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-2">연결 요청</p>
+                <h2 className="text-xl font-light mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+                  {selected.name}
+                </h2>
+                <p className="text-xs text-[#8c857a] mb-6">{selected.career}</p>
+
+                <div className="space-y-3">
+                  <input
+                    value={reqName}
+                    onChange={e => setReqName(e.target.value)}
+                    placeholder="담당자 이름"
+                    className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
+                  />
+                  <input
+                    value={reqEmail}
+                    onChange={e => setReqEmail(e.target.value)}
+                    placeholder="이메일"
+                    className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
+                  />
+                  <input
+                    value={reqOrg}
+                    onChange={e => setReqOrg(e.target.value)}
+                    placeholder="소속 (예: 인하대학교 경영학과)"
+                    className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
+                  />
+                  <textarea
+                    value={reqMessage}
+                    onChange={e => setReqMessage(e.target.value)}
+                    placeholder="전달하고 싶은 메시지를 남겨주세요"
+                    rows={4}
+                    className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048] resize-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSendRequest}
+                  disabled={sending || !reqName || !reqEmail}
+                  className="w-full bg-[#3a6048] text-white py-4 text-sm font-medium mt-6 hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed">
+                  {sending ? '전송 중...' : '연결 요청 보내기'}
+                </button>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-3xl mb-4">🎉</p>
+                <p className="text-lg mb-2" style={{ fontFamily: 'Georgia, serif' }}>요청이 전달됐어요</p>
+                <p className="text-sm text-[#8c857a] mb-6">{selected.name}님께 연결 요청을 보냈습니다</p>
+                <button onClick={closeModal}
+                  className="border border-[#d8d2c8] px-6 py-2 text-sm hover:border-[#1c1a17] transition">
+                  닫기
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </main>
   )

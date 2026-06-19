@@ -7,9 +7,10 @@ import Link from 'next/link'
 export default function MyPage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [connections, setConnections] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchData = async () => {
       // 로그인 확인
       const { data: { user } } = await supabase.auth.getUser()
@@ -20,13 +21,25 @@ export default function MyPage() {
       setUser(user)
 
       // 내 프로필 불러오기
-      const { data } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('name', user.user_metadata?.name || '')
         .single()
 
-      setProfile(data)
+      setProfile(profileData)
+
+      // 내가 받은 연결 요청 불러오기
+      if (profileData) {
+        const { data: connData } = await supabase
+          .from('connections')
+          .select('*')
+          .eq('profile_id', profileData.id)
+          .order('id', { ascending: false })
+
+        setConnections(connData || [])
+      }
+
       setLoading(false)
     }
     fetchData()
@@ -117,13 +130,39 @@ export default function MyPage() {
               </Link>
             </div>
           </div>
-        ) : (
+       ) : (
           <div className="border border-[#d8d2c8] bg-white p-8 text-center mb-6">
             <p className="text-[#8c857a] text-sm mb-4">아직 등록된 프로필이 없어요</p>
             <Link href="/register"
               className="inline-block bg-[#3a6048] text-white px-8 py-3 text-sm hover:opacity-90 transition">
               참여 선언하기 →
             </Link>
+          </div>
+        )}
+
+        {/* 받은 연결 요청 */}
+        {connections.length > 0 && (
+          <div className="border border-[#d8d2c8] bg-white p-6">
+            <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">
+              받은 연결 요청 ({connections.length})
+            </p>
+            <div className="space-y-4">
+              {connections.map((conn, i) => (
+                <div key={i} className="border border-[#d8d2c8] p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[#1c1a17]">{conn.requester_name}</p>
+                      <p className="text-xs text-[#8c857a]">{conn.requester_org}</p>
+                    </div>
+                    <span className="text-xs bg-[#f0e8d8] text-[#a07840] px-3 py-1 rounded-full">
+                      {conn.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[#1c1a17] mb-2">{conn.message}</p>
+                  <p className="text-xs text-[#8c857a]">{conn.requester_email}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
