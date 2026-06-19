@@ -110,15 +110,21 @@ const [menuOpen, setMenuOpen] = useState(false)
             Legado는 현장의 경험을 대학과 연결합니다 —<br />
             급여가 아니라, 의미를 위해.
           </p>
-          <div className="flex gap-4 flex-wrap">
-            <Link href="/register" className="bg-[#1c1a17] text-[#f7f4ee] px-8 py-3 text-sm hover:bg-[#a07840] transition"
-  style={{ fontFamily: 'sans-serif' }}>
-  경험 나누기
-</Link>
-<Link href="/explore" className="border border-[#d8d2c8] text-[#1c1a17] px-8 py-3 text-sm hover:border-[#1c1a17] transition"
-  style={{ fontFamily: 'sans-serif' }}>
-  강연 · 강사 초청하기
-</Link>
+
+          <div>
+            <div className="flex gap-4 flex-wrap mb-3">
+              <Link href="/register" className="bg-[#1c1a17] text-[#f7f4ee] px-8 py-3 text-sm hover:bg-[#a07840] transition"
+                style={{ fontFamily: 'sans-serif' }}>
+                경험 나누기
+              </Link>
+              <Link href="/explore" className="border border-[#d8d2c8] text-[#1c1a17] px-8 py-3 text-sm hover:border-[#1c1a17] transition"
+                style={{ fontFamily: 'sans-serif' }}>
+                강연 · 강사 초청하기
+              </Link>
+            </div>
+            <p className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
+              3분이면 등록 완료 · 맞는 대학이 나타나면 직접 연락드려요
+            </p>
           </div>
         </div>
 
@@ -174,19 +180,41 @@ const [menuOpen, setMenuOpen] = useState(false)
         </div>
       </section>
 
-      {/* 통계 */}
-      <section className="grid grid-cols-2 md:grid-cols-4 border-t border-[#d8d2c8]">
-        {[
-          { num: '340+', desc: '경험을 나누는 전문가' },
-          { num: '82', desc: '연결된 대학·학과' },
-          { num: '61%', desc: '무상 또는 실비 기여' },
-          { num: '4.9', desc: '평균 강의 만족도' },
-        ].map((stat, i) => (
-          <div key={i} className="px-8 py-8 border-r border-[#d8d2c8] last:border-r-0">
-            <div className="text-3xl text-[#a07840] mb-1">{stat.num}</div>
-            <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>{stat.desc}</div>
-          </div>
-        ))}
+      {/* 운영 상태 안내 */}
+      <section className="border-t border-[#d8d2c8] px-8 py-12">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">
+            현재 베타 운영 중
+          </p>
+          <p className="text-lg md:text-xl font-light leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>
+            아직 작은 시작이지만, 그래서 더 정성껏 연결합니다.<br />
+            <span className="text-[#8c857a] text-base">합류하시는 한 분 한 분을 직접 살피고, 맞는 대학에 직접 소개해드립니다.</span>
+          </p>
+        </div>
+      </section>
+      
+{/* 대학을 위한 가치 */}
+      <section className="px-12 py-20 bg-[#ece7dc] border-t border-b border-[#d8d2c8]">
+        <p className="text-xs tracking-widest text-[#a07840] uppercase mb-3" style={{ fontFamily: 'sans-serif' }}>대학·기관 담당자께</p>
+        <h2 className="text-3xl font-light mb-4">왜 교수 대신 <strong className="font-bold">현업 전문가</strong>인가</h2>
+        <p className="text-sm text-[#8c857a] mb-12 max-w-2xl" style={{ fontFamily: 'sans-serif' }}>
+          이론은 충분합니다. 학생들에게 지금 필요한 건 현장의 시행착오와 살아있는 판단력입니다.
+        </p>
+
+        <div className="grid md:grid-cols-4 gap-6">
+          {[
+            { icon: '🎯', title: '현장성 강화', desc: '교과서에 없는 실무 사례와 최신 산업 동향을 직접 전달합니다' },
+            { icon: '🤝', title: '산학협력 실적', desc: '정규 산학협력 프로그램으로 활용 가능, 협약 실적으로 인정됩니다' },
+            { icon: '💼', title: '취업·진로 연결', desc: '학생들이 실제 업계 인물과 네트워킹할 기회를 얻습니다' },
+            { icon: '🚀', title: '창업교육 강화', desc: '실제 창업·경영 경험자의 생생한 케이스로 수업 깊이가 달라집니다' },
+          ].map((item, i) => (
+            <div key={i} className="bg-white border border-[#d8d2c8] p-6">
+              <div className="text-2xl mb-3">{item.icon}</div>
+              <div className="font-semibold text-sm mb-2" style={{ fontFamily: 'sans-serif' }}>{item.title}</div>
+              <div className="text-xs text-[#8c857a] leading-relaxed" style={{ fontFamily: 'sans-serif' }}>{item.desc}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* 찾아보기 섹션 */}
