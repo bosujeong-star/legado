@@ -8,6 +8,7 @@ export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [accountType, setAccountType] = useState('') // 개인 / 기관
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -20,7 +21,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name } }
+        options: { data: { name, account_type: accountType } }
       })
       if (error) {
         setMessage(error.message)
@@ -82,17 +83,45 @@ export default function Auth() {
         <div className="space-y-4">
 
           {mode === 'signup' && (
-            <div>
-              <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-2">
-                이름
-              </label>
-              <input
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="홍길동"
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
-              />
-            </div>
+            <>
+              <div>
+                <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-2">
+                  가입 유형
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+            <button
+                    type="button"
+                    onClick={() => setAccountType('개인')}
+                    className={`p-4 border text-sm text-left transition
+                      ${accountType === '개인'
+                        ? 'border-[#3a6048] bg-[#d8e8de] text-[#3a6048]'
+                        : 'border-[#d8d2c8] text-[#1c1a17] hover:border-[#3a6048]'}`}>
+                    개인 (경험 나누기)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAccountType('기관')}
+                    className={`p-4 border text-sm text-left transition
+                      ${accountType === '기관'
+                        ? 'border-[#a07840] bg-[#f0e8d8] text-[#a07840]'
+                        : 'border-[#d8d2c8] text-[#1c1a17] hover:border-[#a07840]'}`}>
+                    대학·기관 (강사 초청)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-2">
+                  {accountType === '기관' ? '담당자 이름' : '이름'}
+                </label>
+                <input
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="홍길동"
+                  className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
+                />
+              </div>
+            </>
           )}
 
           <div>
@@ -134,7 +163,7 @@ export default function Auth() {
 
           <button
             onClick={handleSubmit}
-            disabled={loading || !email || !password}
+            disabled={loading || !email || !password || (mode === 'signup' && !accountType)}
             className="w-full bg-[#3a6048] text-white py-4 text-sm font-medium hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed">
             {loading ? '처리 중...' : mode === 'login' ? '로그인' : '가입하기'}
           </button>

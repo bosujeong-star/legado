@@ -284,7 +284,7 @@ const [menuOpen, setMenuOpen] = useState(false)
           <p className="text-sm text-[#8c857a] leading-relaxed mb-6" style={{ fontFamily: 'sans-serif' }}>
             채용 공고가 아니라 초청으로 시작하세요.<br />맞는 분이 어딘가에 있습니다.
           </p>
-          <Link href="/register" className="bg-[#a07840] text-white px-8 py-3 text-sm hover:opacity-90 transition"
+          <Link href="/post" className="bg-[#a07840] text-white px-8 py-3 text-sm hover:opacity-90 transition"
   style={{ fontFamily: 'sans-serif' }}>
   초청 공고 올리기 →
 </Link>
