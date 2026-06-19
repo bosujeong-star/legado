@@ -26,20 +26,44 @@ export default function Explore() {
   const [sent, setSent] = useState(false)
 
   useEffect(() => {
-    const fetchProfiles = async () => {
-      const { data, error } = await supabase
+    const fetchAll = async () => {
+      // 전문가 프로필 불러오기
+      const { data: profilesData } = await supabase
         .from('profiles')
         .select('*')
         .order('id', { ascending: false })
 
-      if (error) {
-        console.error(error)
-      } else {
-        setListings(data || [])
-      }
+      // 대학 공고 불러오기
+      const { data: postingsData } = await supabase
+        .from('postings')
+        .select('*')
+        .order('id', { ascending: false })
+
+      // 두 데이터를 같은 모양으로 통일해서 합치기
+      const profileItems = (profilesData || []).map(p => ({
+        ...p,
+        listingType: 'profile', // 구분용
+        displayName: p.name,
+        displayRole: p.career,
+        displayMotive: p.motive,
+        displayMeta: p.region,
+      }))
+
+      const postingItems = (postingsData || []).map(p => ({
+        ...p,
+        listingType: 'posting',
+        type: '대학·기관 (강사 초청)',
+        displayName: `${p.university} ${p.department || ''}`.trim(),
+        displayRole: `${p.format} · ${p.schedule || ''}`.trim(),
+        displayMotive: p.description,
+        displayMeta: p.fee,
+        field: p.field,
+      }))
+
+      setListings([...profileItems, ...postingItems])
       setLoading(false)
     }
-    fetchProfiles()
+    fetchAll()
   }, [])
 
   const filtered = listings.filter(item => {
@@ -63,6 +87,31 @@ export default function Explore() {
       return
     }
 
+    const myAccountType = user.user_metadata?.account_type
+
+    // 전문가 카드 → 기관 계정만 요청 가능
+    if (item.listingType === 'profile' && myAccountType !== '기관') {
+      alert('전문가에게 연결 요청을 보내려면 대학·기관 계정으로 로그인해주세요')
+      return
+    }
+
+    // 대학 공고 카드 → 개인(전문가) 계정만 지원 가능
+    if (item.listingType === 'posting' && myAccountType !== '개인') {
+      alert('공고에 지원하려면 개인 계정으로 로그인해주세요')
+      return
+    }
+
+    // 자기 자신의 게시물에는 접근 불가
+    const myName = user.user_metadata?.name
+    if (item.listingType === 'profile' && item.name === myName) {
+      alert('본인 프로필에는 연결 요청을 보낼 수 없어요')
+      return
+    }
+    if (item.listingType === 'posting' && item.contact_email === user.email) {
+      alert('본인이 등록한 공고에는 지원할 수 없어요')
+      return
+    }
+
     setSelected(item)
     setSent(false)
     setReqName(user.user_metadata?.name || '')
@@ -75,25 +124,47 @@ export default function Explore() {
 
   const handleSendRequest = async () => {
     setSending(true)
-    const { error } = await supabase
-      .from('connections')
-      .insert([{
-        profile_id: selected.id,
-        requester_name: reqName,
-        requester_email: reqEmail,
-        requester_org: reqOrg,
-        message: reqMessage,
-      }])
 
-    if (error) {
-      alert('전송 중 오류가 발생했습니다')
-      console.error(error)
+    if (selected.listingType === 'profile') {
+      // 전문가에게 연결 요청
+      const { error } = await supabase
+        .from('connections')
+        .insert([{
+          profile_id: selected.id,
+          requester_name: reqName,
+          requester_email: reqEmail,
+          requester_org: reqOrg,
+          message: reqMessage,
+        }])
+
+      if (error) {
+        alert('전송 중 오류가 발생했습니다')
+        console.error(error)
+      } else {
+        setSent(true)
+      }
     } else {
-      setSent(true)
+      // 대학 공고에 지원
+      const { error } = await supabase
+        .from('applications')
+        .insert([{
+          posting_id: selected.id,
+          applicant_name: reqName,
+          applicant_email: reqEmail,
+          applicant_career: reqOrg,
+          message: reqMessage,
+        }])
+
+      if (error) {
+        alert('전송 중 오류가 발생했습니다')
+        console.error(error)
+      } else {
+        setSent(true)
+      }
     }
+
     setSending(false)
   }
-
   return (
     <main className="min-h-screen bg-[#f7f4ee]" style={{ fontFamily: 'sans-serif' }}>
 
@@ -176,30 +247,29 @@ export default function Explore() {
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
             {filtered.map((item, i) => (
-              <div key={i}
+             <div key={i}
                 onClick={() => openModal(item)}
                 className="border border-[#d8d2c8] bg-white hover:shadow-md transition overflow-hidden cursor-pointer">
                 <div className="p-5 border-b border-[#d8d2c8]">
                   <div className="flex items-start justify-between mb-3">
                     <span className={`text-xs font-semibold px-3 py-1 rounded-full
-                      ${item.type === '전문가 (경험 나누기)'
+                      ${item.listingType === 'profile'
                         ? 'bg-[#d8e8de] text-[#3a6048]'
                         : 'bg-[#f0e8d8] text-[#a07840]'}`}>
-                      {item.type === '전문가 (경험 나누기)' ? '전문가 등록' : '대학 초청'}
+                      {item.listingType === 'profile' ? '전문가 등록' : '대학 초청'}
                     </span>
                     <span className={`text-xs px-2 py-1 rounded-full
-                      ${item.fee === '무상 기여' ? 'bg-[#d8e8de] text-[#3a6048]' :
-                        item.fee === '실비만'   ? 'bg-[#f0e8d8] text-[#a07840]' :
+                      ${item.displayMeta === '무상 기여' ? 'bg-[#d8e8de] text-[#3a6048]' :
+                        item.displayMeta === '실비만'   ? 'bg-[#f0e8d8] text-[#a07840]' :
                                                   'bg-[#e8e4de] text-[#8c857a]'}`}>
-                      {item.fee}
+                      {item.displayMeta}
                     </span>
                   </div>
-                  <div className="font-semibold text-sm text-[#1c1a17] mb-1">{item.name}</div>
-                  <div className="text-xs text-[#8c857a]">{item.career}</div>
+                  <div className="font-semibold text-sm text-[#1c1a17] mb-1">{item.displayName}</div>
+                  <div className="text-xs text-[#8c857a]">{item.displayRole}</div>
                 </div>
                 <div className="p-5 bg-[#f7f4ee]">
-                  <div className="text-xs italic text-[#a07840] mb-3">"{item.motive}"</div>
-                  <div className="text-xs text-[#8c857a]">{item.region}</div>
+                  <div className="text-xs italic text-[#a07840] mb-3">"{item.displayMotive}"</div>
                 </div>
               </div>
             ))}
@@ -220,7 +290,7 @@ export default function Explore() {
         </div>
       </footer>
 
-      {/* 연결 요청 모달 */}
+      {/* 연결 요청 / 지원 모달 */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50"
           onClick={closeModal}>
@@ -233,17 +303,19 @@ export default function Explore() {
 
             {!sent ? (
               <>
-                <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-2">연결 요청</p>
+                <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-2">
+                  {selected.listingType === 'profile' ? '연결 요청' : '지원하기'}
+                </p>
                 <h2 className="text-xl font-light mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-                  {selected.name}
+                  {selected.displayName}
                 </h2>
-                <p className="text-xs text-[#8c857a] mb-6">{selected.career}</p>
+                <p className="text-xs text-[#8c857a] mb-6">{selected.displayRole}</p>
 
                 <div className="space-y-3">
                   <input
                     value={reqName}
                     onChange={e => setReqName(e.target.value)}
-                    placeholder="담당자 이름"
+                    placeholder={selected.listingType === 'profile' ? '담당자 이름' : '이름'}
                     className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
                   />
                   <input
@@ -255,13 +327,13 @@ export default function Explore() {
                   <input
                     value={reqOrg}
                     onChange={e => setReqOrg(e.target.value)}
-                    placeholder="소속 (예: 인하대학교 경영학과)"
+                    placeholder={selected.listingType === 'profile' ? '소속 (예: 인하대학교 경영학과)' : '소속·경력'}
                     className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048]"
                   />
                   <textarea
                     value={reqMessage}
                     onChange={e => setReqMessage(e.target.value)}
-                    placeholder="전달하고 싶은 메시지를 남겨주세요"
+                    placeholder={selected.listingType === 'profile' ? '전달하고 싶은 메시지를 남겨주세요' : '간단한 자기소개와 지원 동기를 남겨주세요'}
                     rows={4}
                     className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#3a6048] resize-none"
                   />
@@ -271,14 +343,20 @@ export default function Explore() {
                   onClick={handleSendRequest}
                   disabled={sending || !reqName || !reqEmail}
                   className="w-full bg-[#3a6048] text-white py-4 text-sm font-medium mt-6 hover:opacity-90 transition disabled:opacity-30 disabled:cursor-not-allowed">
-                  {sending ? '전송 중...' : '연결 요청 보내기'}
+                  {sending ? '전송 중...' : selected.listingType === 'profile' ? '연결 요청 보내기' : '지원하기'}
                 </button>
               </>
             ) : (
               <div className="text-center py-8">
                 <p className="text-3xl mb-4">🎉</p>
-                <p className="text-lg mb-2" style={{ fontFamily: 'Georgia, serif' }}>요청이 전달됐어요</p>
-                <p className="text-sm text-[#8c857a] mb-6">{selected.name}님께 연결 요청을 보냈습니다</p>
+                <p className="text-lg mb-2" style={{ fontFamily: 'Georgia, serif' }}>
+                  {selected.listingType === 'profile' ? '요청이 전달됐어요' : '지원이 완료됐어요'}
+                </p>
+                <p className="text-sm text-[#8c857a] mb-6">
+                  {selected.listingType === 'profile'
+                    ? `${selected.displayName}님께 연결 요청을 보냈습니다`
+                    : `${selected.displayName}에 지원 의사를 전달했습니다`}
+                </p>
                 <button onClick={closeModal}
                   className="border border-[#d8d2c8] px-6 py-2 text-sm hover:border-[#1c1a17] transition">
                   닫기
