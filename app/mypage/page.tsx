@@ -9,6 +9,7 @@ export default function MyPage() {
   const [profile, setProfile] = useState<any>(null)
   const [connections, setConnections] = useState<any[]>([])
   const [applications, setApplications] = useState<any[]>([])
+  const [receivedApplications, setReceivedApplications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
  useEffect(() => {
@@ -51,6 +52,18 @@ export default function MyPage() {
 
         setApplications(appData || [])
       }
+
+// 받은 지원 내역 불러오기 (기관 계정일 때)
+      if (user.user_metadata?.account_type === '기관') {
+        const { data: recvAppData } = await supabase
+          .from('applications')
+          .select('*, postings(*)')
+          .eq('postings.contact_email', user.email)
+          .order('id', { ascending: false })
+
+        setReceivedApplications(recvAppData || [])
+      }
+
 
       setLoading(false)
     }
@@ -246,6 +259,62 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
             </div>
           </div>
         )}
+
+ {/* 받은 지원 내역 (기관 계정) */}
+        {receivedApplications.length > 0 && (
+          <div className="border border-[#d8d2c8] bg-white p-6 mt-6">
+            <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">
+              받은 지원 ({receivedApplications.length})
+            </p>
+            <div className="space-y-4">
+              {receivedApplications.map((app, i) => (
+                <div key={i} className="border border-[#d8d2c8] p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[#1c1a17]">{app.applicant_name}</p>
+                      <p className="text-xs text-[#8c857a]">{app.applicant_career}</p>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium
+                      ${app.status === '수락' ? 'bg-[#d8e8de] text-[#3a6048]' :
+                        app.status === '거절' ? 'bg-[#e8e4de] text-[#8c857a]' :
+                                                'bg-[#f0e8d8] text-[#a07840]'}`}>
+                      {app.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#8c857a] mb-1">
+                    공고: {app.postings?.subject}
+                  </p>
+                  <p className="text-sm text-[#1c1a17] mb-3">{app.message}</p>
+                  <p className="text-xs text-[#8c857a] mb-3">{app.applicant_email}</p>
+
+                  {/* 대기중일 때만 수락/거절 */}
+                  {app.status === '대기중' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          await supabase.from('applications').update({ status: '수락' }).eq('id', app.id)
+                          setReceivedApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: '수락' } : a))
+                        }}
+                        className="flex-1 bg-[#3a6048] text-white text-xs py-2 hover:opacity-90 transition">
+                        수락
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await supabase.from('applications').update({ status: '거절' }).eq('id', app.id)
+                          setReceivedApplications(prev => prev.map(a => a.id === app.id ? { ...a, status: '거절' } : a))
+                        }}
+                        className="flex-1 border border-[#d8d2c8] text-[#8c857a] text-xs py-2 hover:border-[#1c1a17] transition">
+                        거절
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+
 
       </div>
     </main>
