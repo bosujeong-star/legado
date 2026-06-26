@@ -66,8 +66,9 @@ const [menuOpen, setMenuOpen] = useState(false)
       {menuOpen && (
         <div className="md:hidden fixed top-16 left-0 right-0 z-50 border-b border-[#d8d2c8] bg-[#f7f4ee] px-8 py-4 flex flex-col gap-4 text-sm">
           <Link href="/explore" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">찾아보기</Link>
-          <a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">참여 형태</a>
-          <a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">이용 방법</a>
+       <Link href="/about" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">소개</Link>
+<a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">참여 형태</a>
+<a href="#" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">이용 방법</a>
 
           <div className="border-t border-[#d8d2c8] pt-4 mt-2">
             {user ? (
@@ -300,7 +301,7 @@ const [menuOpen, setMenuOpen] = useState(false)
         </div>
         <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>© 2025 Legado. 경험을 남기다.</div>
  <div className="flex gap-6 text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
-          <a href="#" className="hover:text-[#1c1a17]">소개</a>
+<Link href="/about" className="hover:text-[#1c1a17]">소개</Link>
           <Link href="/terms" className="hover:text-[#1c1a17]">이용약관</Link>
           <Link href="/privacy" className="hover:text-[#1c1a17]">개인정보처리방침</Link>
           <a href="mailto:bosujeong@gmail.com" className="hover:text-[#1c1a17]">문의</a>
