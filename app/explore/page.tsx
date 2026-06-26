@@ -137,10 +137,27 @@ export default function Explore() {
           message: reqMessage,
         }])
 
-      if (error) {
+    if (error) {
         alert('전송 중 오류가 발생했습니다')
         console.error(error)
       } else {
+        // 이메일 알림 발송
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: selected.career ? reqEmail : selected.contact_email,
+            subject: '[Legado] 새로운 연결 요청이 왔습니다',
+            html: `
+              <h2>새로운 연결 요청</h2>
+              <p><strong>${reqName}</strong>님이 연결 요청을 보냈습니다.</p>
+              <p>소속: ${reqOrg}</p>
+              <p>메시지: ${reqMessage}</p>
+              <br/>
+              <p><a href="https://legado-gules.vercel.app/mypage">Legado 마이페이지에서 확인하기</a></p>
+            `
+          })
+        })
         setSent(true)
       }
     } else {
@@ -155,10 +172,28 @@ export default function Explore() {
           message: reqMessage,
         }])
 
-      if (error) {
+    if (error) {
         alert('전송 중 오류가 발생했습니다')
         console.error(error)
       } else {
+        // 기관 담당자에게 이메일 알림
+        await fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: selected.contact_email,
+            subject: '[Legado] 새로운 지원자가 있습니다',
+            html: `
+              <h2>새로운 지원</h2>
+              <p><strong>${reqName}</strong>님이 공고에 지원했습니다.</p>
+              <p>경력: ${reqOrg}</p>
+              <p>메시지: ${reqMessage}</p>
+              <p>연락처: ${reqEmail}</p>
+              <br/>
+              <p><a href="https://legado-gules.vercel.app/mypage">Legado 마이페이지에서 확인하기</a></p>
+            `
+          })
+        })
         setSent(true)
       }
     }
