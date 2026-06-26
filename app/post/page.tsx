@@ -26,11 +26,14 @@ export default function PostJob() {
         return
       }
 
-      if (user.user_metadata?.account_type !== '기관') {
+     if (user.user_metadata?.account_type !== '기관') {
         alert('대학·기관 계정만 공고를 올릴 수 있어요')
         router.push('/')
         return
       }
+
+      // 로그인 이메일 자동 설정
+      setForm(prev => ({ ...prev, contactEmail: user.email || '' }))
 
       setChecking(false)
     }
@@ -159,13 +162,9 @@ export default function PostJob() {
 
             <div>
               <label className="text-xs tracking-widest uppercase text-[#a07840] font-medium block mb-3">담당자 이메일</label>
-              <input
-                type="email"
-                value={form.contactEmail}
-                onChange={e => updateForm('contactEmail', e.target.value)}
-                placeholder="example@university.ac.kr"
-                className="w-full border border-[#d8d2c8] bg-white px-4 py-3 text-sm text-[#1c1a17] focus:outline-none focus:border-[#a07840]"
-              />
+              <div className="w-full border border-[#d8d2c8] bg-[#f7f4ee] px-4 py-3 text-sm text-[#8c857a]">
+                {form.contactEmail} (로그인 계정 이메일 자동 적용)
+              </div>
             </div>
 
             <button

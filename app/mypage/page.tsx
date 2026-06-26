@@ -10,6 +10,7 @@ export default function MyPage() {
   const [connections, setConnections] = useState<any[]>([])
   const [applications, setApplications] = useState<any[]>([])
   const [receivedApplications, setReceivedApplications] = useState<any[]>([])
+  const [myPostings, setMyPostings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
  useEffect(() => {
@@ -62,6 +63,17 @@ export default function MyPage() {
           .order('id', { ascending: false })
 
         setReceivedApplications(recvAppData || [])
+      }
+
+// 내가 올린 공고 불러오기 (기관 계정일 때)
+      if (user.user_metadata?.account_type === '기관') {
+        const { data: postingsData } = await supabase
+          .from('postings')
+          .select('*')
+          .eq('contact_email', user.email)
+          .order('id', { ascending: false })
+
+        setMyPostings(postingsData || [])
       }
 
 
@@ -254,6 +266,61 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
                   <p className="text-xs text-[#8c857a]">
                     {new Date(app.created_at).toLocaleDateString('ko-KR')}
                   </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+{/* 내가 올린 공고 */}
+        {myPostings.length > 0 && (
+          <div className="border border-[#d8d2c8] bg-white p-6 mt-6">
+            <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">
+              내가 올린 공고 ({myPostings.length})
+            </p>
+            <div className="space-y-4">
+              {myPostings.map((posting, i) => (
+                <div key={i} className="border border-[#d8d2c8] p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[#1c1a17]">{posting.subject}</p>
+                      <p className="text-xs text-[#8c857a] mt-1">{posting.format} · {posting.field}</p>
+                      <p className="text-xs text-[#8c857a]">{posting.schedule}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#8c857a] mb-3">{posting.description}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => window.location.href = `/post/edit?id=${posting.id}`}
+                      className="flex-1 border border-[#d8d2c8] text-[#8c857a] text-xs py-2 hover:border-[#1c1a17] hover:text-[#1c1a17] transition">
+                      수정
+                    </button>
+                    <button
+                    onClick={async () => {
+                        if (!confirm('공고를 삭제할까요?')) return
+
+                        // 연결된 지원 내역 먼저 삭제
+                        await supabase
+                          .from('applications')
+                          .delete()
+                          .eq('posting_id', posting.id)
+
+                        // 공고 삭제
+                        const { error } = await supabase
+                          .from('postings')
+                          .delete()
+                          .eq('id', posting.id)
+
+                        if (error) {
+                          alert('삭제 중 오류: ' + error.message)
+                        } else {
+                          setMyPostings(prev => prev.filter(p => p.id !== posting.id))
+                        }
+                      }}
+                      className="flex-1 border border-[#d8d2c8] text-[#8c857a] text-xs py-2 hover:border-red-400 hover:text-red-400 transition">
+                      삭제
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
