@@ -398,7 +398,7 @@ const myAccountType = user.user_metadata?.account_type || '개인'
                   {sending ? '전송 중...' : selected.listingType === 'profile' ? '연결 요청 보내기' : '지원하기'}
                 </button>
               </>
-            ) : (
+          ) : (
               <div className="text-center py-8">
                 <p className="text-3xl mb-4">🎉</p>
                 <p className="text-lg mb-2" style={{ fontFamily: 'Georgia, serif' }}>
@@ -409,10 +409,16 @@ const myAccountType = user.user_metadata?.account_type || '개인'
                     ? `${selected.displayName}님께 연결 요청을 보냈습니다`
                     : `${selected.displayName}에 지원 의사를 전달했습니다`}
                 </p>
-                <button onClick={closeModal}
-                  className="border border-[#d8d2c8] px-6 py-2 text-sm hover:border-[#1c1a17] transition">
-                  닫기
-                </button>
+                <div className="flex gap-3 justify-center">
+                  <button onClick={closeModal}
+                    className="border border-[#d8d2c8] px-6 py-2 text-sm hover:border-[#1c1a17] transition">
+                    닫기
+                  </button>
+                  <a href="/mypage"
+                    className="bg-[#3a6048] text-white px-6 py-2 text-sm hover:opacity-90 transition">
+                    마이페이지에서 확인 →
+                  </a>
+                </div>
               </div>
             )}
           </div>
