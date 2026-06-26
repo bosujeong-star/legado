@@ -297,10 +297,11 @@ const [menuOpen, setMenuOpen] = useState(false)
           L<em className="text-[#a07840]">e</em>gado
         </div>
         <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>© 2025 Legado. 경험을 남기다.</div>
-        <div className="flex gap-6 text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
+ <div className="flex gap-6 text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
           <a href="#" className="hover:text-[#1c1a17]">소개</a>
-          <a href="#" className="hover:text-[#1c1a17]">이용약관</a>
-          <a href="#" className="hover:text-[#1c1a17]">문의</a>
+          <Link href="/terms" className="hover:text-[#1c1a17]">이용약관</Link>
+          <Link href="/privacy" className="hover:text-[#1c1a17]">개인정보처리방침</Link>
+          <a href="mailto:bosujeong@gmail.com" className="hover:text-[#1c1a17]">문의</a>
         </div>
       </footer>
 
