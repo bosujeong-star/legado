@@ -5,8 +5,9 @@ import { supabase } from '@/lib/supabase'
 export default function Home() {
   const [user, setUser] = useState<any>(null)
 const [menuOpen, setMenuOpen] = useState(false)
+const [recentListings, setRecentListings] = useState<any[]>([])
 
-  useEffect(() => {
+ useEffect(() => {
     // 현재 로그인 상태 확인
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user)
@@ -15,6 +16,42 @@ const [menuOpen, setMenuOpen] = useState(false)
     supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
+
+    // 최근 등록된 전문가/공고 불러오기
+    const fetchRecent = async () => {
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(2)
+
+      const { data: postingsData } = await supabase
+        .from('postings')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(1)
+
+      const profileItems = (profilesData || []).map((p: any) => ({
+        ...p,
+        listingType: 'profile',
+        displayName: p.name,
+        displayRole: p.career,
+        displayMotive: p.motive,
+        displayMeta: p.region,
+      }))
+
+      const postingItems = (postingsData || []).map((p: any) => ({
+        ...p,
+        listingType: 'posting',
+        displayName: `${p.university} ${p.department || ''}`.trim(),
+        displayRole: `${p.format} · ${p.schedule || ''}`.trim(),
+        displayMotive: p.description,
+        displayMeta: p.fee,
+      }))
+
+      setRecentListings([...profileItems, ...postingItems])
+    }
+    fetchRecent()
   }, [])
 
   const handleLogout = async () => {
@@ -220,52 +257,39 @@ const [menuOpen, setMenuOpen] = useState(false)
         </div>
       </section>
 
-      {/* 찾아보기 섹션 */}
+     {/* 찾아보기 섹션 */}
       <section className="px-12 py-20">
         <p className="text-xs tracking-widest text-[#a07840] uppercase mb-3" style={{ fontFamily: 'sans-serif' }}>찾아보기</p>
         <h2 className="text-3xl font-light mb-12">지금 <strong className="font-bold">연결을 기다리는</strong> 분들</h2>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {[
-            {
-              badge: '전문가 등록', badgeColor: 'bg-[#d8e8de] text-[#3a6048]',
-              name: '정○○', role: '전 현대중공업 조선해양연구소 수석연구원 · 30년',
-              subject: '조선공학 실무 & 해양플랜트 설계',
-              motive: '도면 위의 배가 바다에 뜨는 과정을 직접 보여주고 싶어서요',
-              meta: '정규강의·특강 · 서울·경기 · 무상 기여',
-            },
-            {
-              badge: '대학 초청', badgeColor: 'bg-[#f0e8d8] text-[#a07840]',
-              name: '인하대학교 경영학과', role: '특강 1회 · 2025년 11월',
-              subject: '스타트업 투자와 VC 실무',
-              motive: '교수님보다 투자를 실제로 해본 분의 이야기가 필요합니다',
-              meta: '2시간 · 참여 조건 협의 가능',
-            },
-            {
-              badge: '전문가 등록', badgeColor: 'bg-[#d8e8de] text-[#3a6048]',
-              name: '최○○', role: '전 보건복지부 국장 · 현 의료정책 컨설턴트',
-              subject: '한국 의료정책의 현재와 미래',
-              motive: '정책이 실제로 어떻게 만들어지는지, 공무원이 아니면 모르는 이야기들이 있거든요',
-              meta: '특강·워크숍 · 온오프라인 · 실비만',
-            },
-          ].map((item, i) => (
-            <Link key={i} href="/explore" className="border border-[#d8d2c8] hover:shadow-md transition overflow-hidden block">
-              <div className="p-5 border-b border-[#d8d2c8]">
-                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${item.badgeColor} mb-3 inline-block`}
-                  style={{ fontFamily: 'sans-serif' }}>
-                  {item.badge}
-                </span>
-                <div className="font-semibold text-sm" style={{ fontFamily: 'sans-serif' }}>{item.name}</div>
-                <div className="text-xs text-[#8c857a] mt-1" style={{ fontFamily: 'sans-serif' }}>{item.role}</div>
-              </div>
-              <div className="p-5 bg-[#f7f4ee]">
-                <div className="text-sm mb-2">{item.subject}</div>
-                <div className="text-sm italic text-[#a07840] mb-3">"{item.motive}"</div>
-                <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>{item.meta}</div>
-              </div>
+        {recentListings.length === 0 ? (
+          <div className="text-center py-16 text-[#8c857a]">
+            <p className="text-sm">아직 등록된 전문가가 없어요</p>
+            <Link href="/register" className="inline-block mt-4 text-sm text-[#3a6048] hover:underline">
+              첫 번째로 참여 선언하기 →
             </Link>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-6">
+            {recentListings.map((item, i) => (
+              <Link key={i} href="/explore" className="border border-[#d8d2c8] hover:shadow-md transition overflow-hidden block">
+                <div className="p-5 border-b border-[#d8d2c8]">
+                  <span className={`text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block
+                    ${item.listingType === 'profile' ? 'bg-[#d8e8de] text-[#3a6048]' : 'bg-[#f0e8d8] text-[#a07840]'}`}
+                    style={{ fontFamily: 'sans-serif' }}>
+                    {item.listingType === 'profile' ? '전문가 등록' : '대학 초청'}
+                  </span>
+                  <div className="font-semibold text-sm" style={{ fontFamily: 'sans-serif' }}>{item.displayName}</div>
+                  <div className="text-xs text-[#8c857a] mt-1" style={{ fontFamily: 'sans-serif' }}>{item.displayRole}</div>
+                </div>
+                <div className="p-5 bg-[#f7f4ee]">
+                  <div className="text-sm italic text-[#a07840] mb-3">"{item.displayMotive}"</div>
+                  <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>{item.displayMeta}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* CTA */}
