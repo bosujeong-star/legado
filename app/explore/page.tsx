@@ -245,7 +245,7 @@ const myAccountType = user.user_metadata?.account_type || '개인'
         </div>
 
         {/* 필터 — 유형 */}
-        <div className="flex gap-2 flex-wrap mb-3">
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
           {types.map(t => (
             <button key={t} onClick={() => setActiveType(t)}
               className={`px-4 py-2 rounded-full text-xs font-medium border transition
@@ -258,7 +258,7 @@ const myAccountType = user.user_metadata?.account_type || '개인'
         </div>
 
         {/* 필터 — 분야 */}
-        <div className="flex gap-2 flex-wrap mb-10">
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-10">
           {fields.map(f => (
             <button key={f} onClick={() => setActiveField(f)}
               className={`px-4 py-2 rounded-full text-xs font-medium border transition
@@ -271,7 +271,7 @@ const myAccountType = user.user_metadata?.account_type || '개인'
         </div>
 
 {/* 필터 — 참여 형태 */}
-        <div className="flex gap-2 flex-wrap mb-10">
+        <div className="flex gap-2 overflow-x-auto pb-2 mb-10">
           {['전체', '정규강의', '특강·강연', '워크숍', '멘토링'].map(f => (
             <button key={f} onClick={() => setActiveFormat(f)}
               className={`px-4 py-2 rounded-full text-xs font-medium border transition
