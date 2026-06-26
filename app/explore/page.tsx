@@ -91,7 +91,7 @@ export default function Explore() {
       return
     }
 
-    const myAccountType = user.user_metadata?.account_type
+const myAccountType = user.user_metadata?.account_type || '개인'
 
     // 전문가 카드 → 기관 계정만 요청 가능
     if (item.listingType === 'profile' && myAccountType !== '기관') {
