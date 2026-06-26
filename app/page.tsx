@@ -326,6 +326,7 @@ const [recentListings, setRecentListings] = useState<any[]>([])
         <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>© 2025 Legado. 경험을 남기다.</div>
  <div className="flex gap-6 text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
 <Link href="/about" className="hover:text-[#1c1a17]">소개</Link>
+          <Link href="/faq" className="hover:text-[#1c1a17]">FAQ</Link>
           <Link href="/terms" className="hover:text-[#1c1a17]">이용약관</Link>
           <Link href="/privacy" className="hover:text-[#1c1a17]">개인정보처리방침</Link>
           <a href="mailto:bosujeong@gmail.com" className="hover:text-[#1c1a17]">문의</a>
