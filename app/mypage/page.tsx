@@ -8,6 +8,7 @@ export default function MyPage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [connections, setConnections] = useState<any[]>([])
+  const [applications, setApplications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
  useEffect(() => {
@@ -37,7 +38,18 @@ export default function MyPage() {
           .eq('profile_id', profileData.id)
           .order('id', { ascending: false })
 
-        setConnections(connData || [])
+       setConnections(connData || [])
+      }
+
+      // 내가 보낸 지원 내역 불러오기 (개인 계정일 때)
+      if (user.user_metadata?.account_type === '개인') {
+        const { data: appData } = await supabase
+          .from('applications')
+          .select('*, postings(*)')
+          .eq('applicant_email', user.email)
+          .order('id', { ascending: false })
+
+        setApplications(appData || [])
       }
 
       setLoading(false)
@@ -196,6 +208,39 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
                       </button>
                     </div>
                   )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+ {/* 내가 보낸 지원 내역 */}
+        {applications.length > 0 && (
+          <div className="border border-[#d8d2c8] bg-white p-6 mt-6">
+            <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">
+              내가 지원한 공고 ({applications.length})
+            </p>
+            <div className="space-y-4">
+              {applications.map((app, i) => (
+                <div key={i} className="border border-[#d8d2c8] p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="text-sm font-semibold text-[#1c1a17]">
+                        {app.postings?.university} {app.postings?.department}
+                      </p>
+                      <p className="text-xs text-[#8c857a] mt-1">{app.postings?.subject}</p>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full font-medium
+                      ${app.status === '수락' ? 'bg-[#d8e8de] text-[#3a6048]' :
+                        app.status === '거절' ? 'bg-[#e8e4de] text-[#8c857a]' :
+                                                'bg-[#f0e8d8] text-[#a07840]'}`}>
+                      {app.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[#1c1a17] mb-1">{app.message}</p>
+                  <p className="text-xs text-[#8c857a]">
+                    {new Date(app.created_at).toLocaleDateString('ko-KR')}
+                  </p>
                 </div>
               ))}
             </div>
