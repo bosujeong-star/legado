@@ -16,8 +16,8 @@ export default function Auth() {
     setLoading(true)
     setMessage('')
 
-    if (mode === 'signup') {
-      // 회원가입
+  if (mode === 'signup') {
+      // 회원가입 후 자동 로그인
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -26,8 +26,17 @@ export default function Auth() {
       if (error) {
         setMessage(error.message)
       } else {
-        setMessage('가입 완료! 로그인해주세요 🎉')
-        setMode('login')
+        // 자동 로그인
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        if (loginError) {
+          setMessage('가입 완료! 로그인해주세요 🎉')
+          setMode('login')
+        } else {
+          window.location.href = '/'
+        }
       }
     } else {
       // 로그인
@@ -170,7 +179,7 @@ export default function Auth() {
 
         </div>
 
-        {/* 하단 링크 */}
+      {/* 하단 링크 */}
         <p className="text-center text-xs text-[#8c857a] mt-8">
           {mode === 'login' ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?'}
           <button
@@ -179,6 +188,30 @@ export default function Auth() {
             {mode === 'login' ? '회원가입' : '로그인'}
           </button>
         </p>
+
+        {/* 비밀번호 찾기 */}
+        {mode === 'login' && (
+          <p className="text-center text-xs text-[#8c857a] mt-3">
+            <button
+              onClick={async () => {
+                if (!email) {
+                  alert('이메일을 먼저 입력해주세요')
+                  return
+                }
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                  redirectTo: 'https://legado-gules.vercel.app/reset-password',
+                })
+                if (error) {
+                  alert('오류가 발생했습니다')
+                } else {
+                  alert('비밀번호 재설정 이메일을 보냈습니다 📧')
+                }
+              }}
+              className="text-[#a07840] hover:underline">
+              비밀번호를 잊으셨나요?
+            </button>
+          </p>
+        )}
 
       </div>
     </main>

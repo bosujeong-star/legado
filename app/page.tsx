@@ -113,10 +113,12 @@ const [menuOpen, setMenuOpen] = useState(false)
 
           <div>
             <div className="flex gap-4 flex-wrap mb-3">
-              <Link href="/register" className="bg-[#1c1a17] text-[#f7f4ee] px-8 py-3 text-sm hover:bg-[#a07840] transition"
-                style={{ fontFamily: 'sans-serif' }}>
-                경험 나누기
-              </Link>
+           <button
+  onClick={() => user ? window.location.href = '/register' : window.location.href = '/auth'}
+  className="bg-[#1c1a17] text-[#f7f4ee] px-8 py-3 text-sm hover:bg-[#a07840] transition"
+  style={{ fontFamily: 'sans-serif' }}>
+  경험 나누기
+</button>
               <Link href="/explore" className="border border-[#d8d2c8] text-[#1c1a17] px-8 py-3 text-sm hover:border-[#1c1a17] transition"
                 style={{ fontFamily: 'sans-serif' }}>
                 강연 · 강사 초청하기
