@@ -68,7 +68,7 @@ setHeroProfiles(profilesData?.slice(0, 3) || [])
         </div>
         <div className="hidden md:flex gap-8 text-sm text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
           <Link href="/explore" className="hover:text-[#1c1a17] transition">찾아보기</Link>
-         <a href="/about#how" className="hover:text-[#1c1a17] transition">참여 형태</a>
+<a href="/#formats" className="hover:text-[#1c1a17] transition">참여 형태</a>
 <a href="/faq" className="hover:text-[#1c1a17] transition">이용 방법</a>
         </div>
 
@@ -105,7 +105,7 @@ setHeroProfiles(profilesData?.slice(0, 3) || [])
         <div className="md:hidden fixed top-16 left-0 right-0 z-50 border-b border-[#d8d2c8] bg-[#f7f4ee] px-8 py-4 flex flex-col gap-4 text-sm">
           <Link href="/explore" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">찾아보기</Link>
        <Link href="/about" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">소개</Link>
-<a href="/about#how" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">참여 형태</a>
+<a href="/#formats" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">참여 형태</a>
 <a href="/faq" onClick={() => setMenuOpen(false)} className="text-[#1c1a17]">이용 방법</a>
 
           <div className="border-t border-[#d8d2c8] pt-4 mt-2">
@@ -225,8 +225,7 @@ setHeroProfiles(profilesData?.slice(0, 3) || [])
       </section>
       
 {/* 대학을 위한 가치 */}
-      <section className="px-12 py-20 bg-[#ece7dc] border-t border-b border-[#d8d2c8]">
-        <p className="text-xs tracking-widest text-[#a07840] uppercase mb-3" style={{ fontFamily: 'sans-serif' }}>대학·기관 담당자께</p>
+<section id="formats" className="px-12 py-20 bg-[#ece7dc] border-t border-b border-[#d8d2c8]">        <p className="text-xs tracking-widest text-[#a07840] uppercase mb-3" style={{ fontFamily: 'sans-serif' }}>대학·기관 담당자께</p>
         <h2 className="text-3xl font-light mb-4">왜 교수 대신 <strong className="font-bold">현업 전문가</strong>인가</h2>
         <p className="text-sm text-[#8c857a] mb-12 max-w-2xl" style={{ fontFamily: 'sans-serif' }}>
           이론은 충분합니다. 학생들에게 지금 필요한 건 현장의 시행착오와 살아있는 판단력입니다.
