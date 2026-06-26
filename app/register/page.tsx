@@ -26,24 +26,43 @@ function RegisterForm() {
   useEffect(() => {
     const loadExisting = async () => {
       if (!editId) return
+
+      // 로그인 확인
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/auth')
+        return
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', editId)
         .single()
 
-      if (data) {
-        setForm({
-          type: data.type || '',
-          name: data.name || '',
-          career: data.career || '',
-          field: data.field || '',
-          motive: data.motive || '',
-          format: data.format ? data.format.split(', ') : [],
-          region: data.region || '',
-          fee: data.fee || '',
-        })
+      if (error || !data) {
+        alert('프로필을 찾을 수 없습니다')
+        router.push('/mypage')
+        return
       }
+
+      // 내 프로필인지 확인
+      if (data.name !== user.user_metadata?.name) {
+        alert('본인의 프로필만 수정할 수 있습니다')
+        router.push('/mypage')
+        return
+      }
+
+      setForm({
+        type: data.type || '',
+        name: data.name || '',
+        career: data.career || '',
+        field: data.field || '',
+        motive: data.motive || '',
+        format: data.format ? data.format.split(', ') : [],
+        region: data.region || '',
+        fee: data.fee || '',
+      })
       setLoadingExisting(false)
     }
     loadExisting()

@@ -51,6 +51,13 @@ function EditPostForm() {
         return
       }
 
+      // 내 공고인지 확인
+      if (data.contact_email !== user.email) {
+        alert('본인의 공고만 수정할 수 있습니다')
+        router.push('/mypage')
+        return
+      }
+
       setForm({
         university: data.university || '',
         department: data.department || '',
