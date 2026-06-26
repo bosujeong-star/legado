@@ -15,6 +15,7 @@ export default function Explore() {
   const [activeField, setActiveField] = useState('전체')
   const [activeType,  setActiveType]  = useState('전체')
   const [search, setSearch] = useState('')
+  const [activeFormat, setActiveFormat] = useState('전체')
 
   // 연결 요청 모달 상태
   const [selected, setSelected] = useState<any>(null)
@@ -71,11 +72,14 @@ export default function Explore() {
     const matchType  = activeType  === '전체' ||
       (activeType === '전문가 등록' && item.type === '전문가 (경험 나누기)') ||
       (activeType === '대학 초청'   && item.type === '대학·기관 (강사 초청)')
+    const matchFormat = activeFormat === '전체' || item.format?.includes(activeFormat)
     const matchSearch = search === '' ||
       item.name?.includes(search) ||
       item.motive?.includes(search) ||
-      item.field?.includes(search)
-    return matchField && matchType && matchSearch
+      item.field?.includes(search) ||
+      item.career?.includes(search) ||
+      item.subject?.includes(search)
+    return matchField && matchType && matchFormat && matchSearch
   })
 
   const openModal = async (item: any) => {
@@ -261,6 +265,19 @@ export default function Explore() {
                 ${activeField === f
                   ? 'bg-[#a07840] text-white border-[#a07840]'
                   : 'bg-white text-[#8c857a] border-[#d8d2c8] hover:border-[#a07840]'}`}>
+              {f}
+            </button>
+          ))}
+        </div>
+
+{/* 필터 — 참여 형태 */}
+        <div className="flex gap-2 flex-wrap mb-10">
+          {['전체', '정규강의', '특강·강연', '워크숍', '멘토링'].map(f => (
+            <button key={f} onClick={() => setActiveFormat(f)}
+              className={`px-4 py-2 rounded-full text-xs font-medium border transition
+                ${activeFormat === f
+                  ? 'bg-[#3a6048] text-white border-[#3a6048]'
+                  : 'bg-white text-[#8c857a] border-[#d8d2c8] hover:border-[#3a6048]'}`}>
               {f}
             </button>
           ))}
