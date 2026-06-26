@@ -138,7 +138,7 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
           </h1>
         </div>
 
-        {/* 계정 정보 */}
+       {/* 계정 정보 */}
         <div className="border border-[#d8d2c8] bg-white p-6 mb-6">
           <p className="text-xs tracking-widest uppercase text-[#a07840] font-medium mb-4">계정 정보</p>
           <div className="space-y-3">
@@ -150,6 +150,38 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
               <span className="text-[#8c857a]">가입일</span>
               <span className="text-[#1c1a17]">{new Date(user?.created_at).toLocaleDateString('ko-KR')}</span>
             </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-[#8c857a]">계정 유형</span>
+              <span className="text-[#1c1a17]">{user?.user_metadata?.account_type || '개인'}</span>
+            </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-[#d8d2c8]">
+            <button
+              onClick={async () => {
+                if (!confirm('정말 탈퇴하실 건가요? 모든 데이터가 삭제되고 복구할 수 없어요.')) return
+                if (!confirm('한 번 더 확인합니다. 정말 탈퇴하시겠어요?')) return
+
+                // 프로필 삭제
+                if (profile) {
+                  await supabase.from('profiles').delete().eq('id', profile.id)
+                }
+
+                // 계정 삭제
+                const { error } = await supabase.auth.admin.deleteUser(user.id)
+
+                if (error) {
+                  // admin API 없을 경우 로그아웃만
+                  await supabase.auth.signOut()
+                  alert('탈퇴 처리됐습니다. 계정 완전 삭제는 관리자에게 문의해주세요.')
+                  window.location.href = '/'
+                } else {
+                  alert('탈퇴가 완료됐습니다')
+                  window.location.href = '/'
+                }
+              }}
+              className="text-xs text-red-400 hover:underline">
+              회원 탈퇴
+            </button>
           </div>
         </div>
 
