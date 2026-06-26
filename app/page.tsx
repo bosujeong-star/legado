@@ -6,6 +6,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
 const [menuOpen, setMenuOpen] = useState(false)
 const [recentListings, setRecentListings] = useState<any[]>([])
+const [heroProfiles, setHeroProfiles] = useState<any[]>([])
 
  useEffect(() => {
     // 현재 로그인 상태 확인
@@ -48,7 +49,7 @@ const [recentListings, setRecentListings] = useState<any[]>([])
         displayMotive: p.description,
         displayMeta: p.fee,
       }))
-
+setHeroProfiles(profilesData?.slice(0, 3) || [])
       setRecentListings([...profileItems, ...postingItems])
     }
     fetchRecent()
@@ -168,55 +169,45 @@ const [recentListings, setRecentListings] = useState<any[]>([])
           </div>
         </div>
 
-        {/* 오른쪽 — 전문가 카드들 */}
+       {/* 오른쪽 — 전문가 카드들 */}
         <div className="flex flex-col justify-center px-8 py-20 gap-4 bg-[#ece7dc]">
           <p className="text-xs tracking-widest text-[#8c857a] uppercase mb-2" style={{ fontFamily: 'sans-serif' }}>
             지금 참여 중인 분들
           </p>
 
-          {[
-            {
-              name: '김○○ · 전 서울아산병원 흉부외과 과장',
-              role: '임상 35년 · 의료 AI 도입 선도',
-              motive: '다음 세대 의사들이 제가 겪은 시행착오를 줄였으면 해서요',
-              form: '무상 기여',
-              formColor: 'bg-[#d8e8de] text-[#3a6048]',
-            },
-            {
-              name: '박○○ · 전 삼성전자 DS부문 상무',
-              role: '반도체 공정 전문 · 기술 경영 20년',
-              motive: '은퇴 후에도 사회와 계속 연결되어 있고 싶어서요',
-              form: '실비만',
-              formColor: 'bg-[#f0e8d8] text-[#a07840]',
-            },
-            {
-              name: '이○○ · 한국은행 전 통화정책국장',
-              role: '통화·금융정책 28년',
-              motive: '교과서에는 없는 정책 현장의 이야기를 남기고 싶어서요',
-              form: '협의 가능',
-              formColor: 'bg-[#e8e4de] text-[#8c857a]',
-            },
-          ].map((person, i) => (
-            <div key={i} className="bg-white border border-[#d8d2c8] p-5 hover:shadow-md transition">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <div className="font-semibold text-sm text-[#1c1a17]" style={{ fontFamily: 'sans-serif' }}>
-                    {person.name}
-                  </div>
-                  <div className="text-xs text-[#8c857a] mt-1" style={{ fontFamily: 'sans-serif' }}>
-                    {person.role}
-                  </div>
-                </div>
-                <span className={`text-xs px-3 py-1 rounded-full font-medium shrink-0 ml-2 ${person.formColor}`}
-                  style={{ fontFamily: 'sans-serif' }}>
-                  {person.form}
-                </span>
-              </div>
-              <div className="text-sm italic text-[#a07840] border-t border-[#d8d2c8] pt-3">
-                "{person.motive}"
-              </div>
+          {heroProfiles.length === 0 ? (
+            <div className="bg-white border border-[#d8d2c8] p-8 text-center">
+              <p className="text-sm text-[#8c857a] mb-3">아직 등록된 전문가가 없어요</p>
+              <Link href="/register" className="text-xs text-[#3a6048] hover:underline">
+                첫 번째로 참여 선언하기 →
+              </Link>
             </div>
-          ))}
+          ) : (
+            heroProfiles.map((person, i) => (
+              <div key={i} className="bg-white border border-[#d8d2c8] p-5 hover:shadow-md transition">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <div className="font-semibold text-sm text-[#1c1a17]" style={{ fontFamily: 'sans-serif' }}>
+                      {person.name}
+                    </div>
+                    <div className="text-xs text-[#8c857a] mt-1" style={{ fontFamily: 'sans-serif' }}>
+                      {person.career}
+                    </div>
+                  </div>
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium shrink-0 ml-2
+                    ${person.fee === '무상 기여' ? 'bg-[#d8e8de] text-[#3a6048]' :
+                      person.fee === '실비만' ? 'bg-[#f0e8d8] text-[#a07840]' :
+                      'bg-[#e8e4de] text-[#8c857a]'}`}
+                    style={{ fontFamily: 'sans-serif' }}>
+                    {person.fee}
+                  </span>
+                </div>
+                <div className="text-sm italic text-[#a07840] border-t border-[#d8d2c8] pt-3">
+                  "{person.motive}"
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
