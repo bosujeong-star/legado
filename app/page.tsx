@@ -314,7 +314,7 @@ setHeroProfiles(profilesData?.slice(0, 3) || [])
         <div className="text-xl font-light tracking-widest">
           L<em className="text-[#a07840]">e</em>gado
         </div>
-        <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>© 2025 Legado. 경험을 남기다.</div>
+        <div className="text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>© 2026 Legado. 경험을 남기다.</div>
  <div className="flex gap-6 text-xs text-[#8c857a]" style={{ fontFamily: 'sans-serif' }}>
 <Link href="/about" className="hover:text-[#1c1a17]">소개</Link>
           <Link href="/faq" className="hover:text-[#1c1a17]">FAQ</Link>
