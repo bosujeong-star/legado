@@ -173,15 +173,32 @@ const updateConnectionStatus = async (connId: number, newStatus: string) => {
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex gap-3">
-             <Link href={`/register?edit=${profile.id}`}
-  className="flex-1 text-center border border-[#d8d2c8] text-[#1c1a17] py-3 text-sm hover:border-[#1c1a17] transition">
-  프로필 수정
-</Link>
+ <div className="mt-6 flex gap-3">
+              <Link href={`/register?edit=${profile.id}`}
+                className="flex-1 text-center border border-[#d8d2c8] text-[#1c1a17] py-3 text-sm hover:border-[#1c1a17] transition">
+                프로필 수정
+              </Link>
               <Link href="/explore"
                 className="flex-1 text-center bg-[#3a6048] text-white py-3 text-sm hover:opacity-90 transition">
                 찾아보기 →
               </Link>
+              <button
+                onClick={async () => {
+                  if (!confirm('프로필을 삭제할까요? 복구할 수 없어요.')) return
+                  const { error } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', profile.id)
+                  if (error) {
+                    alert('삭제 중 오류가 발생했습니다')
+                  } else {
+                    alert('프로필이 삭제됐습니다')
+                    window.location.reload()
+                  }
+                }}
+                className="flex-1 text-center border border-[#d8d2c8] text-red-400 py-3 text-sm hover:border-red-400 transition">
+                프로필 삭제
+              </button>
             </div>
           </div>
        ) : (
